@@ -23,6 +23,7 @@
 
 using namespace gpopt;
 
+typedef CHashSet<DOUBLE, UlHash<DOUBLE>, gpos::FEqual<DOUBLE>, CleanupNULL<DOUBLE> > CHSDoubleSet;
 
 //---------------------------------------------------------------------------
 //	@function:
@@ -151,12 +152,28 @@ CXformExpandNAryJoin::Transform
 	GPOS_ASSERT(ulArity >= 3);
 
 	DrgPexpr *pdrgpexpr = GPOS_NEW(pmp) DrgPexpr(pmp);
+	CHSDoubleSet *pdSet = GPOS_NEW(pmp) CHSDoubleSet(pmp);
+	BOOL fNeedsSwap = false;
 	for (ULONG ul = 0; ul < ulArity - 1; ul++)
 	{
 		CExpression *pexprChild = (*pexpr)[ul];
 		pexprChild->AddRef();
 		pdrgpexpr->Append(pexprChild);
+
+		if (pexprChild->Pstats() == NULL)
+		{
+			CExpressionHandle exprhdl(pmp);
+			exprhdl.Attach(pexprChild);
+			exprhdl.DeriveStats(pmp, pmp, NULL /*prprel*/, NULL /*pdrgpstatCtxt*/);
+		}
+
+		DOUBLE dRows = pexprChild->Pstats()->DRows().DVal();
+		if (!fNeedsSwap && !pdSet->FInsert(&dRows))
+		{
+			fNeedsSwap = true;
+		}
 	}
+	pdSet->Release();
 
 	CExpression *pexprScalar = (*pexpr)[ulArity - 1];
 
@@ -171,7 +188,10 @@ CXformExpandNAryJoin::Transform
 	pexprResult->Release();
 	pxfres->Add(pexprNormalized);
 
-	AddSpecifiedJoinOrder(pmp, pexpr, pxfres);
+	if (fNeedsSwap)
+	{
+		AddSpecifiedJoinOrder(pmp, pexpr, pxfres);
+	}
 }
 
 // EOF
