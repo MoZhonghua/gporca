@@ -229,6 +229,15 @@ CPhysicalHashJoin::PrsRequired
 
 	if (1 == ulChildIndex)
 	{
+		if (prsRequired->Ert() == CRewindabilitySpec::ErtGeneral)
+		{
+			CPartInfo *ppartInfo = exprhdl.Pdprel(0)->Ppartinfo();
+			ULONG ulNum = ppartInfo->UlConsumers();
+			if (ulNum > 0)
+			{
+				return GPOS_NEW(pmp) CRewindabilitySpec(CRewindabilitySpec::ErtGeneral /*ert*/);
+			}
+		}
 		// inner child does not have to be rewindable
 		return GPOS_NEW(pmp) CRewindabilitySpec(CRewindabilitySpec::ErtNone /*ert*/);
 	}
