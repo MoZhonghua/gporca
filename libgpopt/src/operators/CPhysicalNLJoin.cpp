@@ -129,6 +129,16 @@ CPhysicalNLJoin::PrsRequired
 		return GPOS_NEW(pmp) CRewindabilitySpec(CRewindabilitySpec::ErtGeneral /*ert*/);
 	}
 
+//	if (prsRequired->Ert() == CRewindabilitySpec::ErtGeneral)
+//	{
+//		CPartInfo *ppartInfo = exprhdl.Pdprel(1)->Ppartinfo();
+//		ULONG ulNum = ppartInfo->UlConsumers();
+//		if (ulNum > 0)
+//		{
+//			return GPOS_NEW(pmp) CRewindabilitySpec(CRewindabilitySpec::ErtGeneral /*ert*/);
+//		}
+//	}
+
 	// pass through requirements to outer child
 	return PrsPassThru(pmp, exprhdl, prsRequired, 0 /*ulChildIndex*/);
 }

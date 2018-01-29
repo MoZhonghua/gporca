@@ -721,6 +721,29 @@ CPartIndexMap::PdrgpulScanIds
 	return pdrgpul;
 }
 
+DrgPul *
+CPartIndexMap::PdrgpulScanIdsInPropagator
+	(
+	IMemoryPool *pmp
+	)
+	const
+{
+	DrgPul *pdrgpul = GPOS_NEW(pmp) DrgPul(pmp);
+	PartIndexMapIter pimi(m_pim);
+	while (pimi.FAdvance())
+	{
+		const CPartTableInfo *ppti = pimi.Pt();
+		if (EpimPropagator != ppti->Epim())
+		{
+			continue;
+		}
+
+		pdrgpul->Append(GPOS_NEW(pmp) ULONG(ppti->UlScanId()));
+	}
+
+	return pdrgpul;
+}
+
 //---------------------------------------------------------------------------
 //	@function:
 //		CPartIndexMap::FSubset

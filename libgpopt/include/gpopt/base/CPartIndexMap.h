@@ -290,6 +290,9 @@ namespace gpopt
 			// extract scan ids in the given memory pool
 			DrgPul *PdrgpulScanIds(IMemoryPool *pmp, BOOL fConsumersOnly = false) const;
 
+			// extract scan ids in the given memory pool
+			DrgPul *PdrgpulScanIdsInPropagator(IMemoryPool *pmp) const;
+
 			// check if two part index maps are equal
 			BOOL FEqual
 				(

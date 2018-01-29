@@ -237,11 +237,51 @@ CPhysicalHashJoin::PrsRequired
 			{
 				return GPOS_NEW(pmp) CRewindabilitySpec(CRewindabilitySpec::ErtGeneral /*ert*/);
 			}
+
+//			CPartIndexMap *ppimDrvd = exprhdl.Pdpplan(0 /*ulChildIndex*/)->Ppim();
+//			DrgPul *pdrgpulScanIds = ppimDrvd->PdrgpulScanIds(pmp, true /*fConsumersOnly*/);
+//			DrgPul *pdrgpulScanIdsInPropgator = ppimDrvd->PdrgpulScanIdsInPropagator(pmp);
+//			const ULONG ulConsumers = pdrgpulScanIds->UlLength();
+//			const ULONG ulProducers = pdrgpulScanIdsInPropgator->UlLength();
+//
+//			DrgPul *pdrgpulScanIds2 = ppimDrvd->PdrgpulScanIds(pmp, false /*fConsumersOnly*/);
+//			const ULONG ulConsumers2 = pdrgpulScanIds2->UlLength();
+//			if (ulConsumers2 > 0)
+//			{
+//				// do nothing
+//			}
+//
+//			for (ULONG ul = 0; ul < ulConsumers; ul++)
+//			{
+//				ULONG *pulScanId = (*pdrgpulScanIds)[ul];
+//				BOOL found = false;
+//				for (ULONG ul2 = 0; !found && ul2 < ulProducers; ul2++)
+//				{
+//					ULONG *pulScanIdProd = (*pdrgpulScanIdsInPropgator)[ul2];
+//					found = (*pulScanIdProd == *pulScanId);
+//				}
+//
+//				if (!found)
+//				{
+//					return GPOS_NEW(pmp) CRewindabilitySpec(CRewindabilitySpec::ErtGeneral /*ert*/);
+//				}
+//			}
 		}
+
 		// inner child does not have to be rewindable
 		return GPOS_NEW(pmp) CRewindabilitySpec(CRewindabilitySpec::ErtNone /*ert*/);
 	}
-		
+
+	if (prsRequired->Ert() == CRewindabilitySpec::ErtGeneral)
+	{
+		CPartInfo *ppartInfo = exprhdl.Pdprel(1)->Ppartinfo();
+		ULONG ulNum = ppartInfo->UlConsumers();
+		if (ulNum > 0)
+		{
+			return GPOS_NEW(pmp) CRewindabilitySpec(CRewindabilitySpec::ErtGeneral /*ert*/);
+		}
+	}
+
 	// pass through requirements to outer child
 	return PrsPassThru(pmp, exprhdl, prsRequired, 0 /*ulChildIndex*/);
 }
